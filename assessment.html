@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JEE Mains Study Planner</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Light gray background */
+        }
+        .card {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-radius: 1rem;
+        }
+        /* Custom border/style for subject grouping */
+        .subject-header {
+            background-color: #e2e8f0;
+            font-weight: 700;
+            color: #1f2937;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .status-select {
+            transition: all 0.2s;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            font-size: 0.875rem; /* text-sm */
+            width: 100%;
+        }
+        .completed-day {
+            background-color: #f0fdf4; /* Green tint for completed days */
+            color: #6b7280;
+        }
+.sunday-highlight {
+    background: linear-gradient(135deg, rgba(252, 165, 165, 0.08), rgba(252, 165, 165, 0));
+}
+.subject-row-physics,
+.subject-row-chemistry,
+.subject-row-mathematics,
+.subject-row-mock {
+    background-color: transparent;
+}
+        .subject-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px;
+        }
+        .subject-tag.physics {
+            background-color: rgba(59, 130, 246, 0.12);
+            color: #1d4ed8;
+        }
+        .subject-tag.chemistry {
+            background-color: rgba(16, 185, 129, 0.12);
+            color: #047857;
+        }
+        .subject-tag.mathematics {
+            background-color: rgba(249, 115, 22, 0.12);
+            color: #c2410c;
+        }
+        .subject-tag.mock {
+            background-color: rgba(236, 72, 153, 0.12);
+            color: #be185d;
+        }
+        .plan-item-content {
+            flex-grow: 1;
+        }
+        .progress-bar {
+            height: 1.5rem;
+            border-radius: 9999px;
+            overflow: hidden;
+            transition: width 0.5s ease-in-out;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            transition: width 0.5s ease-in-out;
+        }
+        #assessmentSection {
+            --subject-section-bg: #ffffff;
+            --subject-border: #e2e8f0;
+            --subject-head-bg: #eef2ff;
+            --subject-row-bg: #ffffff;
+            --subject-row-hover: #f8fafc;
+        }
+        #assessmentSection {
+            border: 1px solid var(--subject-border);
+            background-color: var(--subject-section-bg);
+        }
+        #assessmentSection table thead {
+            background-color: #ffffff;
+        }
+        #assessmentSection table tbody tr + tr {
+            border-top: 1px solid var(--subject-border);
+        }
+        #assessmentSection .subject-row {
+            background-color: var(--subject-row-bg);
+            transition: background-color 0.2s ease;
+        }
+        #assessmentSection .subject-row:hover {
+            background-color: var(--subject-row-hover);
+        }
+        #assessmentSection .col-sno { width: 32px; min-width: 32px; }
+        #assessmentSection .col-chapter { min-width: 200px; width: clamp(220px, 28%, 320px); }
+        #assessmentSection .col-class { width: 64px; min-width: 60px; }
+        #assessmentSection .col-weightage { width: 88px; min-width: 78px; }
+        #assessmentSection .col-level { width: 96px; min-width: 84px; }
+        #assessmentSection .col-status { width: 128px; min-width: 116px; }
+        #assessmentSection .col-level-me { width: 128px; min-width: 116px; }
+        #assessmentSection .comment-header,
+        #assessmentSection .comment-cell {
+            min-width: 320px;
+            width: clamp(320px, 34%, 400px);
+            padding-right: 1.75rem;
+        }
+        #assessmentSection .comment-textarea {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        #assessmentSection .tab-button {
+            padding: 0.5rem 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 0.85rem 0.85rem 0 0;
+            border: 1px solid transparent;
+            border-bottom-width: 2px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        #assessmentSection .tab-button.physics { background-color: rgba(191, 219, 254, 0.45); color: #1d4ed8; border-color: rgba(96, 165, 250, 0.6); }
+        #assessmentSection .tab-button.chemistry { background-color: rgba(167, 243, 208, 0.45); color: #047857; border-color: rgba(16, 185, 129, 0.45); }
+        #assessmentSection .tab-button.mathematics { background-color: rgba(253, 230, 138, 0.45); color: #b45309; border-color: rgba(251, 191, 36, 0.5); }
+        #assessmentSection .tab-button.study-plan { background-color: rgba(221, 214, 254, 0.5); color: #5b21b6; border-color: rgba(167, 139, 250, 0.6); }
+        #assessmentSection .tab-button.active {
+            background-color: #ffffff;
+            border-color: #6366f1;
+            border-bottom-color: #ffffff;
+            color: #312e81;
+            box-shadow: 0 -2px 12px rgba(99, 102, 241, 0.18);
+        }
+        #assessmentSection .tab-button:focus-visible {
+            outline: 2px solid rgba(129, 140, 248, 0.6);
+            outline-offset: 2px;
+        }
+        #tabSummary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        #tabSummary .tab-summary-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid transparent;
+            background-color: #ffffff;
+            color: #1f2937;
+        }
+        #tabSummary .tab-chip-mastered,
+        #tabSummary .tab-chip-revision,
+        #tabSummary .tab-chip-not-started {
+            background-color: transparent;
+            color: #1f2937;
+            border-color: rgba(203, 213, 225, 0.6);
+        }
+        #tabSummary .tab-chip-in-progress {
+            background-color: transparent;
+            color: #0369a1;
+            border-color: rgba(125, 211, 252, 0.6);
+        }
+        #tabSummary .tab-summary-chip .chip-count {
+            font-size: 1.35rem;
+            font-weight: 800;
+        }
+        .no-print {
+            display: inline-flex;
+        }
+        @media print {
+            body {
+                background: #ffffff;
+                color: #000000;
+            }
+            body * {
+                visibility: hidden;
+            }
+            #studyPlanContainer,
+            #studyPlanContainer * {
+                visibility: visible;
+            }
+            #studyPlanContainer {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                box-shadow: none;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-8xl mx-auto px-2 sm:px-4">
+        <h1 class="text-4xl font-extrabold text-indigo-700 mb-2 text-center">
+            JEE Mains Study Planner
+        </h1>
+        <!-- Assessment & Study Plan Tabs -->
+        <div id="assessmentSection" class="card bg-white overflow-hidden mb-8">
+            <div class="px-4 pt-4 pb-3 border-b border-gray-200 flex flex-wrap items-center gap-3">
+                <div id="subjectTabs" class="flex flex-wrap gap-1 items-end"></div>
+                <div id="tabSummary" class="flex flex-wrap gap-2 items-center"></div>
+                <div class="flex-grow"></div>
+                <button id="downloadExcelBtn" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-indigo-700 border border-indigo-200 rounded-full hover:bg-indigo-50 transition">
+                    <span>⬇️</span>
+                    <span>Download Excel</span>
+                </button>
+            </div>
+
+            <div id="assessmentTableContent" class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-white">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider col-sno">#</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider col-chapter">Chapter</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider col-class">Class</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider col-weightage">Weightage</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider col-level">Level</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-indigo-800 uppercase tracking-wider col-status">Status</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-pink-600 uppercase tracking-wider col-level-me">My Level</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider comment-header">Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody id="assessmentTableBody">
+                        <!-- Chapter rows will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="studyPlanContainer" class="hidden">
+                <div class="flex items-center justify-between px-4 py-3 border-t bg-purple-50 text-purple-800">
+                    <h2 class="text-xl font-bold">Study Plan</h2>
+                    <div class="no-print flex items-center gap-2">
+                        <button id="printPlanBtn" class="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold text-indigo-700 border border-indigo-200 rounded-full hover:bg-indigo-50 transition" type="button">
+                            <span>🖨️</span>
+                            <span>Print</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="planContent" class="divide-y divide-gray-200">
+                    <!-- Plan items will be injected here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 p-4 text-center text-gray-600 border-t pt-4">
+            <p>All assessment and plan statuses are saved locally on this browser using LocalStorage.</p>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA DEFINITIONS AND STORAGE KEYS ---
+        // V4 key remains the same as the underlying logic keys (status/confidence) are unchanged
+        const ASSESSMENT_KEY = 'JEE_MAINS_STATUS_ASSESSMENT_V4'; 
+        const PLAN_KEY = 'JEE_MAINS_STUDY_PLAN_V4'; 
+        const TOTAL_DAYS = 90;
+        const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+        const PRIORITY_CHAPTERS = [
+            // Chemistry
+            { subject: "Chemistry", name: "Electrochemistry" },
+            { subject: "Chemistry", name: "Coordination Compounds" },
+            { subject: "Chemistry", name: "The d and f Block Elements" },
+            { subject: "Chemistry", name: "Qualitative Analysis" },
+            { subject: "Chemistry", name: "Solid State" },
+            { subject: "Chemistry", name: "Surface Chemistry" },
+            { subject: "Chemistry", name: "The p-Block Elements (Group 15 to 18)" },
+            // Physics
+            { subject: "Physics", name: "Optics (Ray & Wave)" },
+            { subject: "Physics", name: "Modern Physics (Dual Nature, Atoms, Nuclei)" },
+            { subject: "Physics", name: "Semiconductor Electronics: Materials, Devices and Simple Circuits" },
+            { subject: "Physics", name: "Units, Dimensions, Error Analysis" },
+            // Mathematics
+            { subject: "Mathematics", name: "Matrices and Determinants" },
+            { subject: "Mathematics", name: "Vector Algebra" },
+            { subject: "Mathematics", name: "Three Dimensional Geometry" },
+            { subject: "Mathematics", name: "Linear Programming" },
+            { subject: "Mathematics", name: "Probability" },
+            { subject: "Mathematics", name: "Differential Equations" },
+            { subject: "Mathematics", name: "Application of Integrals" }
+        ];
+
+        const CHAPTER_DETAILS = {
+            "Electrochemistry": "Revise Nernst equation, cell EMF derivations, and conductance numericals.",
+            "Coordination Compounds": "Cover Werner theory, hybridisation charts, and colour/isomerism PYQs.",
+            "The d and f Block Elements": "Focus on trends, important reactions, and ionic radius & oxidation state PYQs.",
+            "Qualitative Analysis": "Memorise group reagents, confirmatory tests, and typical precipitate colours.",
+            "Solid State": "Revise crystal lattices, packing efficiency, and derivations involving void fractions.",
+            "Surface Chemistry": "Study adsorption isotherms (Freundlich/Langmuir) and colloid applications.",
+            "The p-Block Elements": "Prepare anomalous behaviour, key compounds, and industrial processes.",
+            "The p-Block Elements (Group 15 to 18)": "Prepare anomalous behaviour, key compounds, and industrial processes.",
+
+            "Optics (Ray & Wave)": "Revise mirror/lens formulae, interference-diffraction theory, and solve PYQs.",
+            "Modern Physics (Dual Nature, Atoms, Nuclei)": "Cover photoelectric effect, Bohr model, and radioactivity numericals.",
+            "Semiconductor Electronics: Materials, Devices and Simple Circuits": "Study PN junction biasing, rectifier circuits, and logic gates.",
+            "Units, Dimensions, Error Analysis": "Practice dimensional analysis, least-count calculations, and error propagation.",
+
+            "Matrices and Determinants": "Review operations, adjoint/inverse, Cramer's rule, and matrix equation problems.",
+            "Vector Algebra": "Practice dot/cross products, projections, and scalar triple product applications.",
+            "Three Dimensional Geometry": "Focus on line-plane equations, angles, and shortest distance problems.",
+            "Linear Programming": "Work on graphical method, constraints, and corner-point theorem questions.",
+            "Probability": "Solve conditional probability, Bayes theorem, and binomial distribution problems.",
+            "Differential Equations": "Revise formation/solution of first-order forms and integrating factor techniques.",
+            "Application of Integrals": "Compute area between curves and volume of revolution examples."
+        };
+
+        const SUBJECT_DEFAULT_DETAILS = {
+            Physics: "Review core theory for 45 minutes, then attempt timed PYQs.",
+            Chemistry: "Revise key reactions/formulae and solve 15 exemplar problems.",
+            Mathematics: "Solve a mixed set of 20 problems focusing on weak concepts."
+        };
+
+        const TYPE_DEFAULT_DETAILS = {
+            Priority: "Priority slot: revise high-weight theory, summarise formulas, and attempt past 5-year PYQs.",
+            "NEW/LEARN": "Learn theory from textbook/notes, highlight formulas, and solve illustrative examples.",
+            "Practice/Revise": "Attempt mixed practice sets and review mistakes from previous sessions.",
+            Review: "Skim formula sheet, redo marked questions, and log takeaways.",
+            "Intense Practice": "Timed drill: 25-30 problems, focus on accuracy and speed.",
+            MOCK: "Attempt a timed section test and capture error log immediately after.",
+            ANALYSIS: "Analyse mock attempt, classify mistakes, and revise related theory.",
+            REST: "Light revision/flashcards; avoid heavy problem solving."
+        };
+
+        function getTaskDetail(task) {
+            if (!task) {
+                return '';
+            }
+            if (CHAPTER_DETAILS[task.name]) {
+                return CHAPTER_DETAILS[task.name];
+            }
+            if (SUBJECT_DEFAULT_DETAILS[task.subject]) {
+                return SUBJECT_DEFAULT_DETAILS[task.subject];
+            }
+            if (TYPE_DEFAULT_DETAILS[task.type]) {
+                return TYPE_DEFAULT_DETAILS[task.type];
+            }
+            return '';
+        }
+
+        // STATUS OPTIONS (Completion/Progress)
+        const STATUS_OPTIONS = [
+            { value: "0_not_started", text: "Not Started", color: "bg-red-100 border-red-400 text-red-700", priority: 5 },
+            { value: "2_in_progress", text: "In Progress", color: "bg-sky-100 border-sky-400 text-sky-700", priority: 3 },
+            { value: "3_completed", text: "Ready for Revision", color: "bg-amber-100 border-amber-400 text-amber-700", priority: 2 },
+            { value: "4_mastered", text: "Mastered", color: "bg-green-100 border-green-400 text-green-700", priority: 1 }
+        ];
+        const VALID_STATUS_VALUES = new Set(STATUS_OPTIONS.map(opt => opt.value));
+        const LEGACY_STATUS_MAP = {
+            "1_theory_done": "0_not_started",
+            "2_in_progress": "2_in_progress"
+        };
+
+        // CONFIDENCE OPTIONS (Renamed to Subjective Difficulty)
+        const CONFIDENCE_OPTIONS = [
+            { value: "2_high", text: "Easy", color: "bg-green-100 border-green-500", priorityPenalty: 0 },
+            { value: "1_medium", text: "Moderate", color: "bg-orange-100 border-orange-500", priorityPenalty: 1 },
+            { value: "0_low", text: "Tough", color: "bg-red-100 border-red-500", priorityPenalty: 3 }
+        ];
+        const DEFAULT_CONFIDENCE_VALUE = "0_low";
+        const DEFAULT_CONFIDENCE_OPTION = CONFIDENCE_OPTIONS.find(opt => opt.value === DEFAULT_CONFIDENCE_VALUE) || CONFIDENCE_OPTIONS[CONFIDENCE_OPTIONS.length - 1];
+
+        // Chapters Data (including a numerical priority score for the generator)
+        const CHAPTERS = [
+            // --- PHYSICS ---
+            { name: "Units and Measurements", class: "11th", weightage: "Low", difficulty: "Easy", subject: "Physics", priorityScore: 1 },
+            { name: "Vectors and Calculus", class: "11th", weightage: "Medium", difficulty: "Moderate", subject: "Physics", priorityScore: 3 },
+            { name: "Motion in a Straight Line", class: "11th", weightage: "Medium", difficulty: "Easy", subject: "Physics", priorityScore: 3 },
+            { name: "Motion in a Plane", class: "11th", weightage: "Medium", difficulty: "Moderate", subject: "Physics", priorityScore: 3 },
+            { name: "Newton's Laws of Motion", class: "11th", weightage: "High", difficulty: "Moderate", subject: "Physics", priorityScore: 5 },
+            { name: "Work, Power and Energy", class: "11th", weightage: "High", difficulty: "Moderate", subject: "Physics", priorityScore: 5 },
+            { name: "System of Particles and Centre of Mass", class: "11th", weightage: "Medium", difficulty: "Moderate", subject: "Physics", priorityScore: 3 },
+            { name: "Rotational Motion", class: "11th", weightage: "Medium", difficulty: "Tough", subject: "Physics", priorityScore: 3 },
+            { name: "Gravitation", class: "11th", weightage: "Low", difficulty: "Easy", subject: "Physics", priorityScore: 1 },
+            { name: "Mechanical Properties of Solids", class: "11th", weightage: "Low", difficulty: "Moderate", subject: "Physics", priorityScore: 1 },
+            { name: "Fluid Mechanics", class: "11th", weightage: "Medium", difficulty: "Moderate", subject: "Physics", priorityScore: 3 },
+            { name: "Thermal Properties of Matter", class: "11th", weightage: "Medium", difficulty: "Moderate", subject: "Physics", priorityScore: 3 },
+            { name: "Kinetic Theory of Gases", class: "11th", weightage: "Low", difficulty: "Easy", subject: "Physics", priorityScore: 1 },
+            { name: "Thermodynamics", class: "11th", weightage: "High", difficulty: "Moderate", subject: "Physics", priorityScore: 5 },
+            { name: "Simple Harmonic Motion", class: "11th", weightage: "Medium", difficulty: "Moderate", subject: "Physics", priorityScore: 3 },
+            { name: "Waves", class: "11th", weightage: "Medium", difficulty: "Moderate", subject: "Physics", priorityScore: 3 },
+            { name: "Electric Charges and Fields", class: "12th", weightage: "High", difficulty: "Moderate", subject: "Physics", priorityScore: 5 },
+            { name: "Electrostatic Potential and Capacitance", class: "12th", weightage: "High", difficulty: "Moderate", subject: "Physics", priorityScore: 5 },
+            { name: "Current Electricity", class: "12th", weightage: "High", difficulty: "Moderate", subject: "Physics", priorityScore: 5 },
+            { name: "Moving Charges and Magnetism", class: "12th", weightage: "High", difficulty: "Moderate", subject: "Physics", priorityScore: 5 },
+            { name: "Magnetism and Matter", class: "12th", weightage: "Medium", difficulty: "Moderate", subject: "Physics", priorityScore: 3 },
+            { name: "Electromagnetic Induction", class: "12th", weightage: "High", difficulty: "Moderate", subject: "Physics", priorityScore: 5 },
+            { name: "Alternating Current", class: "12th", weightage: "High", difficulty: "Moderate", subject: "Physics", priorityScore: 5 },
+            { name: "Electromagnetic Waves", class: "12th", weightage: "Medium", difficulty: "Easy", subject: "Physics", priorityScore: 3 },
+            { name: "Ray Optics and Optical Instruments", class: "12th", weightage: "High", difficulty: "Moderate", subject: "Physics", priorityScore: 5 },
+            { name: "Wave Optics", class: "12th", weightage: "Medium", difficulty: "Moderate", subject: "Physics", priorityScore: 3 },
+            { name: "Dual Nature of Radiation and Matter", class: "12th", weightage: "Medium", difficulty: "Moderate", subject: "Physics", priorityScore: 3 },
+            { name: "Atoms", class: "12th", weightage: "Medium", difficulty: "Easy", subject: "Physics", priorityScore: 3 },
+            { name: "Nuclei", class: "12th", weightage: "Medium", difficulty: "Easy", subject: "Physics", priorityScore: 3 },
+            { name: "Semiconductor Electronics: Materials, Devices and Simple Circuits", class: "12th", weightage: "Medium", difficulty: "Easy", subject: "Physics", priorityScore: 3 },
+            
+            // --- CHEMISTRY ---
+            { name: "Some Basic Concepts of Chemistry", class: "11th", weightage: "Low", difficulty: "Easy", subject: "Chemistry", priorityScore: 1 },
+            { name: "Structure of Atom", class: "11th", weightage: "Medium", difficulty: "Moderate", subject: "Chemistry", priorityScore: 3 },
+            { name: "Classification of Elements and Periodicity in Properties", class: "11th", weightage: "Medium", difficulty: "Moderate", subject: "Chemistry", priorityScore: 3 },
+            { name: "Chemical Bonding and Molecular Structure", class: "11th", weightage: "High", difficulty: "Moderate", subject: "Chemistry", priorityScore: 5 },
+            { name: "Thermodynamics", class: "11th", weightage: "High", difficulty: "Tough", subject: "Chemistry", priorityScore: 5 },
+            { name: "Equilibrium", class: "11th", weightage: "High", difficulty: "Tough", subject: "Chemistry", priorityScore: 5 },
+            { name: "Redox Reactions", class: "11th", weightage: "Medium", difficulty: "Moderate", subject: "Chemistry", priorityScore: 3 },
+            { name: "The p-Block Elements", class: "11th", weightage: "Medium", difficulty: "Tough", subject: "Chemistry", priorityScore: 3 },
+            { name: "Organic Chemistry - Some Basic Principles and Techniques", class: "11th", weightage: "High", difficulty: "Moderate", subject: "Chemistry", priorityScore: 5 },
+            { name: "Hydrocarbons", class: "11th", weightage: "Medium", difficulty: "Moderate", subject: "Chemistry", priorityScore: 3 },
+            { name: "Solutions", class: "12th", weightage: "Medium", difficulty: "Moderate", subject: "Chemistry", priorityScore: 3 },
+            { name: "Electrochemistry", class: "12th", weightage: "High", difficulty: "Tough", subject: "Chemistry", priorityScore: 5 },
+            { name: "Chemical Kinetics", class: "12th", weightage: "Medium", difficulty: "Moderate", subject: "Chemistry", priorityScore: 3 },
+            { name: "The p-Block Elements (Group 15 to 18)", class: "12th", weightage: "Medium", difficulty: "Tough", subject: "Chemistry", priorityScore: 3 },
+            { name: "The d and f Block Elements", class: "12th", weightage: "Medium", difficulty: "Moderate", subject: "Chemistry", priorityScore: 3 },
+            { name: "Coordination Compounds", class: "12th", weightage: "High", difficulty: "Moderate", subject: "Chemistry", priorityScore: 5 },
+            { name: "Haloalkanes and Haloarenes", class: "12th", weightage: "Medium", difficulty: "Moderate", subject: "Chemistry", priorityScore: 3 },
+            { name: "Alcohols, Phenols and Ethers", class: "12th", weightage: "Medium", difficulty: "Moderate", subject: "Chemistry", priorityScore: 3 },
+            { name: "Aldehydes, Ketones and Carboxylic Acids", class: "12th", weightage: "Medium", difficulty: "Moderate", subject: "Chemistry", priorityScore: 3 },
+            { name: "Amines", class: "12th", weightage: "Medium", difficulty: "Moderate", subject: "Chemistry", priorityScore: 3 },
+            { name: "Biomolecules", class: "12th", weightage: "Low", difficulty: "Easy", subject: "Chemistry", priorityScore: 1 },
+            { name: "Principles Related to Practical Chemistry", class: "12th", weightage: "Low", difficulty: "Easy", subject: "Chemistry", priorityScore: 1 },
+
+            // --- MATHEMATICS ---
+            { name: "Basic Mathematics and Logarithm", class: "11th", weightage: "Low", difficulty: "Easy", subject: "Mathematics", priorityScore: 1 },
+            { name: "Quadratic Equations", class: "11th", weightage: "Medium", difficulty: "Moderate", subject: "Mathematics", priorityScore: 3 },
+            { name: "Sequence and Series", class: "11th", weightage: "High", difficulty: "Moderate", subject: "Mathematics", priorityScore: 5 },
+            { name: "Complex Numbers", class: "11th", weightage: "High", difficulty: "Moderate", subject: "Mathematics", priorityScore: 5 },
+            { name: "Permutations and Combinations", class: "11th", weightage: "High", difficulty: "Moderate", subject: "Mathematics", priorityScore: 5 },
+            { name: "Binomial Theorem", class: "11th", weightage: "Medium", difficulty: "Moderate", subject: "Mathematics", priorityScore: 3 },
+            { name: "Probability", class: "11th/12th", weightage: "High", difficulty: "Moderate", subject: "Mathematics", priorityScore: 5 },
+            { name: "Matrices and Determinants", class: "12th", weightage: "High", difficulty: "Easy", subject: "Mathematics", priorityScore: 5 },
+            { name: "Trigonometric Ratios and Identities", class: "11th", weightage: "Medium", difficulty: "Moderate", subject: "Mathematics", priorityScore: 3 },
+            { name: "Trigonometric Equations", class: "11th", weightage: "Medium", difficulty: "Moderate", subject: "Mathematics", priorityScore: 3 },
+            { name: "Inverse Trigonometric Functions", class: "12th", weightage: "Medium", difficulty: "Moderate", subject: "Mathematics", priorityScore: 3 },
+            { name: "Solutions of Triangles", class: "11th", weightage: "Low", difficulty: "Moderate", subject: "Mathematics", priorityScore: 1 },
+            { name: "Functions", class: "11th", weightage: "High", difficulty: "Moderate", subject: "Mathematics", priorityScore: 5 },
+            { name: "Limits of Functions", class: "12th", weightage: "High", difficulty: "Moderate", subject: "Mathematics", priorityScore: 5 },
+            { name: "Continuity", class: "12th", weightage: "Medium", difficulty: "Moderate", subject: "Mathematics", priorityScore: 3 },
+            { name: "Differentiability and Method of Differentiation", class: "12th", weightage: "High", difficulty: "Tough", subject: "Mathematics", priorityScore: 5 },
+            { name: "Application of Derivatives", class: "12th", weightage: "High", difficulty: "Tough", subject: "Mathematics", priorityScore: 5 },
+            { name: "Indefinite Integration", class: "12th", weightage: "High", difficulty: "Moderate", subject: "Mathematics", priorityScore: 5 },
+            { name: "Definite Integration", class: "12th", weightage: "High", difficulty: "Moderate", subject: "Mathematics", priorityScore: 5 },
+            { name: "Application of Integrals", class: "12th", weightage: "Medium", difficulty: "Tough", subject: "Mathematics", priorityScore: 3 },
+            { name: "Differential Equations", class: "12th", weightage: "Medium", difficulty: "Tough", subject: "Mathematics", priorityScore: 3 },
+            { name: "Straight Lines", class: "11th", weightage: "High", difficulty: "Easy", subject: "Mathematics", priorityScore: 5 },
+            { name: "Circle", class: "11th", weightage: "Medium", difficulty: "Moderate", subject: "Mathematics", priorityScore: 3 },
+            { name: "Parabola", class: "11th", weightage: "Medium", difficulty: "Moderate", subject: "Mathematics", priorityScore: 3 },
+            { name: "Ellipse", class: "11th", weightage: "Low", difficulty: "Moderate", subject: "Mathematics", priorityScore: 1 },
+            { name: "Hyperbola", class: "11th", weightage: "Low", difficulty: "Moderate", subject: "Mathematics", priorityScore: 1 },
+            { name: "Vector Algebra", class: "12th", weightage: "High", difficulty: "Moderate", subject: "Mathematics", priorityScore: 5 },
+            { name: "Three Dimensional Geometry", class: "12th", weightage: "High", difficulty: "Moderate", subject: "Mathematics", priorityScore: 5 },
+            { name: "Statistics", class: "11th/12th", weightage: "Medium", difficulty: "Easy", subject: "Mathematics", priorityScore: 3 },
+            { name: "Set Theory and Relations", class: "11th", weightage: "Low", difficulty: "Easy", subject: "Mathematics", priorityScore: 1 }
+        ];
+
+        const SUBJECTS = Array.from(new Set(CHAPTERS.map(chapter => chapter.subject)));
+        const STUDY_PLAN_TAB = "Study Plan";
+        const TAB_ITEMS = SUBJECTS.concat([STUDY_PLAN_TAB]);
+
+        const SUBJECT_THEME_MAP = {
+            Physics: {
+                sectionBg: '#ffffff',
+                border: '#fecaca',
+                headBg: '#fee8f1',
+                rowBg: '#ffffff',
+                rowHover: '#f8fafc'
+            },
+            Chemistry: {
+                sectionBg: '#ffffff',
+                border: '#a7f3d0',
+                headBg: '#e8fdf5',
+                rowBg: '#ffffff',
+                rowHover: '#f8fafc'
+            },
+            Mathematics: {
+                sectionBg: '#ffffff',
+                border: '#bfdbfe',
+                headBg: '#eff6ff',
+                rowBg: '#ffffff',
+                rowHover: '#f8fafc'
+            },
+            default: {
+                sectionBg: '#ffffff',
+                border: '#e2e8f0',
+                headBg: '#eef2ff',
+                rowBg: '#ffffff',
+                rowHover: '#f8fafc'
+            }
+        };
+
+        // Initialize chapter statuses with a structured object
+        let chapterStatuses = {}; 
+        let studyPlan = [];       
+        let selectedSubject = SUBJECTS[0] || '';
+
+        function getDefaultChapterStatus() {
+            return {
+                status: STATUS_OPTIONS[0].value,
+                confidence: DEFAULT_CONFIDENCE_VALUE,
+                comment: ''
+            };
+        }
+
+        function ensureChapterStatus(chapterName) {
+            if (!chapterStatuses[chapterName]) {
+                chapterStatuses[chapterName] = getDefaultChapterStatus();
+            } else {
+                const entry = chapterStatuses[chapterName];
+                if (!entry.status) entry.status = STATUS_OPTIONS[0].value;
+                if (!VALID_STATUS_VALUES.has(entry.status)) {
+                    entry.status = LEGACY_STATUS_MAP[entry.status] || STATUS_OPTIONS[0].value;
+                }
+                if (!entry.confidence) entry.confidence = DEFAULT_CONFIDENCE_VALUE;
+                if (typeof entry.comment !== 'string') entry.comment = '';
+            }
+            return chapterStatuses[chapterName];
+        }
+
+        function getCurrentSubjectTheme() {
+            return SUBJECT_THEME_MAP[selectedSubject] || SUBJECT_THEME_MAP.default;
+        }
+
+        function applySubjectTheme() {
+            const section = document.getElementById('assessmentSection');
+            if (!section) {
+                return;
+            }
+            const theme = getCurrentSubjectTheme();
+            
+            section.style.setProperty('--subject-section-bg', theme.sectionBg);
+            section.style.setProperty('--subject-border', theme.border);
+            section.style.setProperty('--subject-head-bg', theme.headBg);
+            section.style.setProperty('--subject-row-bg', theme.rowBg);
+            section.style.setProperty('--subject-row-hover', theme.rowHover);
+        }
+
+        function updateTabContentVisibility() {
+            const tableContent = document.getElementById('assessmentTableContent');
+            const planContainer = document.getElementById('studyPlanContainer');
+            const planContentEl = document.getElementById('planContent');
+            if (!tableContent || !planContainer) {
+                return;
+            }
+
+            if (selectedSubject === STUDY_PLAN_TAB) {
+                tableContent.classList.add('hidden');
+                planContainer.classList.remove('hidden');
+                if (studyPlan.length === 0 && planContentEl) {
+                    planContentEl.innerHTML = '<div class="p-4 text-sm text-gray-500">Generate your study plan to see daily tasks here.</div>';
+                }
+            } else {
+                tableContent.classList.remove('hidden');
+                planContainer.classList.add('hidden');
+            }
+        }
+
+        function calculatePriorityWindowDays() {
+            const today = new Date();
+            const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const targetMonth = today.getDate() <= 8 ? today.getMonth() : today.getMonth() + 1;
+            const targetDate = new Date(today.getFullYear(), targetMonth, 8);
+            const diff = Math.round((targetDate - startOfToday) / MS_PER_DAY) + 1;
+            return Math.max(1, diff);
+        }
+
+        function normalizeTask(task) {
+            return {
+                subject: task.subject || 'General',
+                name: task.name || 'Task',
+                type: task.type || 'Review',
+                completed: !!task.completed
+            };
+        }
+
+        function applyPrioritySchedule(plan) {
+            if (!Array.isArray(plan) || plan.length === 0) {
+                return;
+            }
+
+            const priorityQueue = PRIORITY_CHAPTERS.map(entry => ({
+                subject: entry.subject,
+                name: entry.name,
+                type: 'Priority',
+                completed: false
+            }));
+
+            if (priorityQueue.length === 0) {
+                return;
+            }
+
+            const windowDays = Math.max(1, Math.min(plan.length, calculatePriorityWindowDays()));
+            const tasksPerDay = Math.max(1, Math.ceil(priorityQueue.length / windowDays));
+
+            const deferredTasks = [];
+            let priorityIndex = 0;
+
+            for (let dayIdx = 0; dayIdx < windowDays && dayIdx < plan.length; dayIdx++) {
+                const day = plan[dayIdx];
+                if (!day) {
+                    continue;
+                }
+
+                const originalTasks = Array.isArray(day.tasks) ? day.tasks.slice() : [];
+                const dayPriorityTasks = [];
+
+                for (let i = 0; i < tasksPerDay && priorityIndex < priorityQueue.length; i++, priorityIndex++) {
+                    dayPriorityTasks.push(normalizeTask(priorityQueue[priorityIndex]));
+                }
+
+                if (dayPriorityTasks.length > 0) {
+                    deferredTasks.push(...originalTasks);
+                    day.tasks = dayPriorityTasks;
+                    day.completed = dayPriorityTasks.every(t => t.completed);
+                    day.completionPercentage = day.completed ? 100 : 0;
+                } else {
+                    day.tasks = originalTasks.map(normalizeTask);
+                }
+            }
+
+            const remainingPriority = priorityQueue.slice(priorityIndex).map(normalizeTask);
+            const redistributionQueue = [...remainingPriority, ...deferredTasks.map(normalizeTask)];
+
+            if (redistributionQueue.length === 0) {
+                return;
+            }
+
+            let insertDayIdx = Math.min(windowDays, plan.length - 1);
+            if (insertDayIdx < 0) {
+                insertDayIdx = 0;
+            }
+
+            redistributionQueue.forEach(task => {
+                const day = plan[insertDayIdx];
+                if (!day) {
+                    return;
+                }
+
+                if (!Array.isArray(day.tasks)) {
+                    day.tasks = [];
+                }
+
+                day.tasks.push(task);
+                day.completed = day.tasks.every(t => t.completed);
+                day.completionPercentage = day.completed ? 100 : 0;
+
+                insertDayIdx++;
+                if (insertDayIdx >= plan.length) {
+                    insertDayIdx = plan.length - 1;
+                }
+            });
+        }
+
+        function getStatusText(statusValue) {
+            const statusOption = STATUS_OPTIONS.find(opt => opt.value === statusValue);
+            return statusOption ? statusOption.text : statusValue;
+        }
+
+        function getConfidenceText(confidenceValue) {
+            const confidenceOption = CONFIDENCE_OPTIONS.find(opt => opt.value === confidenceValue);
+            return confidenceOption ? confidenceOption.text : confidenceValue;
+        }
+
+        function escapeForExcel(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\r?\n/g, ' &#10;');
+        }
+
+        function downloadAssessmentExcel() {
+            const headers = ["Subject", "Chapter", "Class", "Weightage", "Level", "Status", "My Level", "Comments"];
+            const rows = CHAPTERS.map(chapter => {
+                const chapterEntry = ensureChapterStatus(chapter.name);
+                return [
+                    escapeForExcel(chapter.subject),
+                    escapeForExcel(chapter.name),
+                    escapeForExcel(chapter.class),
+                    escapeForExcel(chapter.weightage),
+                    escapeForExcel(chapter.difficulty),
+                    escapeForExcel(getStatusText(chapterEntry.status)),
+                    escapeForExcel(getConfidenceText(chapterEntry.confidence)),
+                    escapeForExcel(chapterEntry.comment || '')
+                ];
+            });
+
+            const tableHtml = `
+                <table>
+                    <thead>
+                        <tr>${headers.map(header => `<th>${header}</th>`).join('')}</tr>
+                    </thead>
+                    <tbody>
+                        ${rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            const blob = new Blob([`\uFEFF${tableHtml}`], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `JEE_Assessment_${new Date().toISOString().split('T')[0]}.xls`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // --- LOCAL STORAGE MANAGEMENT ---
+
+        function loadStatus() {
+            try {
+                const storedData = localStorage.getItem(ASSESSMENT_KEY);
+                chapterStatuses = storedData ? JSON.parse(storedData) : {};
+                CHAPTERS.forEach(chapter => ensureChapterStatus(chapter.name));
+            } catch (e) {
+                console.error("Error loading assessment status from localStorage:", e);
+                chapterStatuses = {};
+                CHAPTERS.forEach(chapter => ensureChapterStatus(chapter.name));
+            }
+        }
+
+        function saveStatus() {
+            try {
+                localStorage.setItem(ASSESSMENT_KEY, JSON.stringify(chapterStatuses));
+            } catch (e) {
+                console.error("Error saving assessment status to localStorage:", e);
+            }
+        }
+
+        function loadPlan() {
+             try {
+                const storedPlan = localStorage.getItem(PLAN_KEY);
+                if (storedPlan) {
+                    const parsedPlan = JSON.parse(storedPlan);
+                    if (parsedPlan.length > 0 && Array.isArray(parsedPlan[0].tasks)) {
+                        studyPlan = parsedPlan;
+                    } else {
+                        console.warn("Detected old study plan structure. Resetting plan for new feature compatibility.");
+                        studyPlan = []; 
+                    }
+                }
+            } catch (e) {
+                console.error("Error loading study plan from localStorage:", e);
+                studyPlan = [];
+            }
+        }
+        
+        function savePlan() {
+            try {
+                localStorage.setItem(PLAN_KEY, JSON.stringify(studyPlan));
+            } catch (e) {
+                console.error("Error saving study plan to localStorage:", e);
+            }
+        }
+
+        // --- DATE UTILITY ---
+        
+        function getPlanDate(dayOffset) {
+            const date = new Date();
+            const offset = Number.isFinite(dayOffset) ? dayOffset : 0;
+            const delta = offset > 0 ? offset - 1 : 0;
+            date.setDate(date.getDate() + delta);
+            const dateString = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+            return { dateString, dayName };
+        }
+
+        // --- PROGRESS CALCULATION HELPERS ---
+
+        function renderSubjectTabs() {
+            const tabsContainer = document.getElementById('subjectTabs');
+            if (!tabsContainer) {
+                return;
+            }
+            tabsContainer.innerHTML = '';
+            
+            if (!selectedSubject && SUBJECTS.length > 0) {
+                selectedSubject = SUBJECTS[0];
+            }
+            
+            TAB_ITEMS.forEach(subject => {
+                const isActive = subject === selectedSubject;
+                const button = document.createElement('button');
+                button.type = 'button';
+                const subjectClass = subject.toLowerCase().includes('physics') ? 'physics'
+                    : subject.toLowerCase().includes('chemistry') ? 'chemistry'
+                    : subject.toLowerCase().includes('math') ? 'mathematics'
+                    : subject === STUDY_PLAN_TAB ? 'study-plan'
+                    : '';
+                button.className = [
+                    'tab-button',
+                    'focus:outline-none',
+                    subjectClass,
+                    isActive ? 'active' : ''
+                ].filter(Boolean).join(' ');
+                button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                button.textContent = subject;
+                button.addEventListener('click', () => {
+                    if (selectedSubject !== subject) {
+                        selectedSubject = subject;
+                        renderSubjectTabs();
+                        renderTable();
+                    }
+                });
+                tabsContainer.appendChild(button);
+            });
+            applySubjectTheme();
+            updateTabContentVisibility();
+        }
+
+        // --- EVENT HANDLERS ---
+
+        /**
+         * Handles the change for either status or confidence for a chapter.
+         * The underlying data keys 'status' and 'confidence' remain for logic stability.
+         * @param {string} chapterName - The name of the chapter.
+         * @param {string} type - 'status' or 'confidence'.
+         * @param {string} newValue - The new selected value.
+         */
+        function handleStatusChange(chapterName, type, newValue) {
+            const chapterEntry = ensureChapterStatus(chapterName);
+            chapterEntry[type] = newValue;
+            saveStatus();
+            renderTable(); 
+            const summaryMetrics = computeSummaryData().metrics;
+            renderTabSummary(summaryMetrics);
+            generateStudyPlan();
+        }
+
+        function handleCommentChange(chapterName, comment) {
+            const chapterEntry = ensureChapterStatus(chapterName);
+            chapterEntry.comment = comment;
+            saveStatus();
+        }
+        
+        function handlePlanStatusChange(day, taskIndex, isCompleted) {
+            const planIndex = studyPlan.findIndex(item => item.day === day);
+            if (planIndex !== -1) {
+                const dayPlan = studyPlan[planIndex];
+                
+                if (dayPlan.tasks && dayPlan.tasks[taskIndex]) {
+                    dayPlan.tasks[taskIndex].completed = isCompleted;
+                }
+
+                const totalTasks = dayPlan.tasks.length;
+                const completedTasks = dayPlan.tasks.filter(t => t.completed).length;
+                
+                const completion = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+                
+                dayPlan.completionPercentage = completion;
+                dayPlan.completed = completion === 100;
+
+                savePlan();
+                renderStudyPlan();
+            }
+        }
+
+
+        // --- UI RENDERING (Assessment) ---
+
+        /** Renders the interactive assessment table with dual metrics. */
+        function renderTable() {
+            const tbody = document.getElementById('assessmentTableBody');
+            tbody.innerHTML = '';
+            if (selectedSubject === STUDY_PLAN_TAB) {
+                updateTabContentVisibility();
+                return;
+            }
+            const filteredChapters = CHAPTERS.filter(chapter => !selectedSubject || chapter.subject === selectedSubject);
+            
+            if (filteredChapters.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `
+                    <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">
+                        No chapters available for this subject yet.
+                    </td>
+                `;
+                tbody.appendChild(emptyRow);
+                return;
+            }
+
+            let sNo = 1;
+
+            filteredChapters.forEach((chapter) => {
+                const chapterNameKey = chapter.name;
+                const currentStatus = ensureChapterStatus(chapterNameKey);
+                const safeKey = chapterNameKey.replace(/[^a-zA-Z0-9]/g, '-');
+
+                const statusOption = STATUS_OPTIONS.find(opt => opt.value === currentStatus.status);
+                const statusColorClass = statusOption ? statusOption.color : STATUS_OPTIONS[0].color;
+                
+                const confidenceOption = CONFIDENCE_OPTIONS.find(opt => opt.value === currentStatus.confidence);
+                const confidenceColorClass = confidenceOption ? confidenceOption.color : DEFAULT_CONFIDENCE_OPTION.color;
+
+                const subjectLower = (chapter.subject || '').toLowerCase();
+                let subjectClassSegment = '';
+                if (subjectLower.includes('physics')) subjectClassSegment = 'physics';
+                else if (subjectLower.includes('chemistry')) subjectClassSegment = 'chemistry';
+                else if (subjectLower.includes('math')) subjectClassSegment = 'mathematics';
+                else if (subjectLower.includes('mock')) subjectClassSegment = 'mock';
+                const subjectRowClass = subjectClassSegment ? `subject-row-${subjectClassSegment}` : '';
+
+                const row = document.createElement('tr');
+                row.className = ['subject-row', 'transition', 'duration-150', subjectRowClass].filter(Boolean).join(' ');
+                
+                row.innerHTML = `
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-500 col-sno">${sNo++}</td>
+                    <td class="px-6 py-4 whitespace-normal text-base font-bold text-gray-900 col-chapter">${chapter.name}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 col-class">${chapter.class}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-semibold ${chapter.weightage === 'High' ? 'text-red-600' : 'text-gray-700'} col-weightage">${chapter.weightage}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 col-level">${chapter.difficulty}</td>
+                    
+                    <!-- Status Dropdown -->
+                    <td class="px-3 py-2 col-status">
+                        <select id="status-select-${safeKey}" 
+                                class="status-select border-2 border-opacity-50 ${statusColorClass}">
+                            ${STATUS_OPTIONS.map(opt => 
+                                `<option value="${opt.value}" ${opt.value === currentStatus.status ? 'selected' : ''}>${opt.text}</option>`
+                            ).join('')}
+                        </select>
+                    </td>
+
+                    <!-- My Level Dropdown (Uses confidence data internally) -->
+                    <td class="px-3 py-2 col-level-me">
+                        <select id="confidence-select-${safeKey}" 
+                                class="status-select border-2 border-opacity-50 ${confidenceColorClass}">
+                            ${CONFIDENCE_OPTIONS.map(opt => 
+                                `<option value="${opt.value}" ${opt.value === currentStatus.confidence ? 'selected' : ''}>${opt.text}</option>`
+                            ).join('')}
+                        </select>
+                    </td>
+
+                    <!-- Comment Input -->
+                    <td class="px-4 py-2 align-top comment-cell">
+                        <textarea id="comment-${safeKey}"
+                                  rows="2"
+                                  class="mt-1 block comment-textarea border border-gray-300 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition resize-y min-h-[70px]"
+                                  placeholder="Add notes..."></textarea>
+                    </td>
+                `;
+                tbody.appendChild(row);
+
+                const statusSelectEl = row.querySelector(`#status-select-${safeKey}`);
+                if (statusSelectEl) {
+                    statusSelectEl.addEventListener('change', (e) => handleStatusChange(chapterNameKey, 'status', e.target.value));
+                }
+                const confidenceSelectEl = row.querySelector(`#confidence-select-${safeKey}`);
+                if (confidenceSelectEl) {
+                    confidenceSelectEl.addEventListener('change', (e) => handleStatusChange(chapterNameKey, 'confidence', e.target.value));
+                }
+                const commentTextarea = row.querySelector(`#comment-${safeKey}`);
+                if (commentTextarea) {
+                    commentTextarea.value = currentStatus.comment || '';
+                    commentTextarea.addEventListener('input', (e) => handleCommentChange(chapterNameKey, e.target.value));
+                }
+            });
+            updateTabContentVisibility();
+        }
+
+        function computeSummaryData() {
+            const counts = { mastered: 0, notStarted: 0, inProgress: 0, revision: 0, total: CHAPTERS.length };
+            
+            CHAPTERS.forEach(chapter => {
+                const chapterEntry = ensureChapterStatus(chapter.name);
+                const status = chapterEntry.status;
+                
+                if (status === '4_mastered') {
+                    counts.mastered++;
+                } else if (status === '3_completed') {
+                    counts.revision++;
+                } else if (status === '2_in_progress') {
+                    counts.inProgress++;
+                } else if (status === '0_not_started') {
+                    counts.notStarted++;
+                }
+            });
+
+            const metrics = [
+                { title: "Mastered", count: counts.mastered, icon: "✅", chipClass: "tab-chip-mastered" },
+                { title: "In Progress", count: counts.inProgress, icon: "⏳", chipClass: "tab-chip-in-progress" },
+                { title: "Ready for Revision", count: counts.revision, icon: "📚", chipClass: "tab-chip-revision" },
+                { title: "Not Started", count: counts.notStarted, icon: "⚠️", chipClass: "tab-chip-not-started" }
+            ];
+
+            return { counts, metrics };
+        }
+
+        function renderTabSummary(metrics) {
+            const tabSummaryContainer = document.getElementById('tabSummary');
+            if (!tabSummaryContainer) {
+                return;
+            }
+            tabSummaryContainer.innerHTML = '';
+
+            metrics.forEach(metric => {
+                const chip = document.createElement('div');
+                chip.className = `tab-summary-chip ${metric.chipClass || ''}`;
+                chip.innerHTML = `
+                    <span class="chip-icon">${metric.icon}</span>
+                    <span class="chip-title">${metric.title}</span>
+                    <span class="chip-count">${metric.count}</span>
+                `;
+                tabSummaryContainer.appendChild(chip);
+            });
+        }
+
+
+        // --- STUDY PLAN GENERATION (Updated Priority Logic) ---
+
+        /** Helper to format a task into the new structured format. */
+        const formatTask = (topic, type) => {
+            return {
+                subject: topic.subject,
+                name: topic.name,
+                type: type, // 'NEW/LEARN', 'Practice/Revise', 'MOCK', 'ANALYSIS', 'REST'
+                completed: false,
+            };
+        };
+
+        /**
+         * Calculates a single priority score based on dual metrics. Higher score means higher priority.
+         * Priority = BaseScore (from Weightage) * StatusPenalty + DifficultyPenalty
+         */
+        function calculateCombinedPriority(chapterName, chapterWeightScore) {
+            const statusData = ensureChapterStatus(chapterName);
+
+            const statusConfig = STATUS_OPTIONS.find(o => o.value === statusData.status) || STATUS_OPTIONS[0];
+            const confidenceConfig = CONFIDENCE_OPTIONS.find(o => o.value === statusData.confidence) || DEFAULT_CONFIDENCE_OPTION;
+            
+            // Base Priority (from weightage): 5 (High) / 3 (Medium) / 1 (Low)
+            let score = chapterWeightScore; 
+
+            // Status Multiplier: Not Started (5), Theory Done (4), In Progress (3), Completed (2), Mastered (1)
+            score *= statusConfig.priority;
+
+            // Confidence Multiplier: Tough (+3), Moderate (+1), Easy (+0)
+            score += confidenceConfig.priorityPenalty * 2; 
+
+            return score;
+        }
+
+
+        function generateStudyPlan() {
+            
+            const chapterPool = [];
+
+            CHAPTERS.forEach(chapter => {
+                const combinedScore = calculateCombinedPriority(chapter.name, chapter.priorityScore);
+                
+                // Only chapters with score > 10 will be actively scheduled for NEW/LEARN/PRACTICE.
+                // Chapters with low scores (Mastered/High Confidence) fall out of the active learning pool.
+                if (combinedScore > 10) { 
+                    // Add chapter to the pool multiple times based on its score to increase scheduling frequency
+                    const repeats = Math.ceil(combinedScore / 10);
+                    for (let i = 0; i < repeats; i++) {
+                        chapterPool.push(chapter);
+                    }
+                }
+            });
+            
+            // Sort pool by final priority score (descending)
+            chapterPool.sort((a, b) => {
+                const scoreA = calculateCombinedPriority(a.name, a.priorityScore);
+                const scoreB = calculateCombinedPriority(b.name, b.priorityScore);
+                return scoreB - scoreA;
+            });
+
+
+            // 2. Schedule Topics
+            let chapterIndex = 0;
+            const getNextTopic = () => {
+                if (chapterPool.length === 0) return null;
+                const topic = chapterPool[chapterIndex % chapterPool.length];
+                chapterIndex++;
+                return topic;
+            };
+
+            // 3. Populate the 90 Day Plan
+            const tempPlan = [];
+            for (let day = 1; day <= TOTAL_DAYS; day++) {
+                let dayTasks = [];
+                let daySubjects = [];
+
+                if (day <= 75) {
+                    // Day 1-75: Core Learning & Revision
+                    const topic1 = getNextTopic();
+                    let topic2 = getNextTopic(); 
+
+                    if (topic1) {
+                        const topic1Status = ensureChapterStatus(topic1.name).status;
+                        const taskType = topic1Status === '0_not_started'
+                            ? 'NEW/LEARN'
+                            : topic1Status === '4_mastered'
+                                ? 'Review'
+                                : 'Practice/Revise';
+                            
+                        dayTasks.push(formatTask(topic1, taskType));
+                        daySubjects.push(topic1.subject[0]);
+                    }
+                    
+                    // Try to schedule a different subject for the second slot
+                    if (topic2) {
+                        // Reschedule if topic2 is same as topic1's subject AND we still have items left
+                        let attempts = 0;
+                        while(topic2.subject === topic1?.subject && attempts < 5 && chapterPool.length > 10) {
+                             topic2 = getNextTopic();
+                             attempts++;
+                        }
+
+                        const topic2Confidence = ensureChapterStatus(topic2.name).confidence;
+                        const taskType = topic2Confidence === '0_low'
+                            ? 'Intense Practice' : 'Review';
+
+                        dayTasks.push(formatTask(topic2, taskType));
+                        daySubjects.push(topic2.subject[0]);
+                    }
+                    
+                    // Add quick test rotation
+                    if (day % 5 === 0 && dayTasks.length > 0) { 
+                         dayTasks.push({
+                            subject: 'Test',
+                            name: `Quick Practice Test on: ${dayTasks.map(t => t.subject).join('/')} topics.`,
+                            type: 'MOCK',
+                            completed: false
+                        });
+                        daySubjects.push('T');
+                    }
+                    if (dayTasks.length === 0) {
+                        dayTasks.push({ subject: 'Rest', name: 'Rest/Self-Study (Plan Pool Exhausted)', type: 'REST', completed: false });
+                        daySubjects.push('R');
+                    }
+
+                    tempPlan.push({
+                        day: day,
+                        tasks: dayTasks,
+                        subjectSummary: [...new Set(daySubjects)].join('/'), 
+                        completed: false,
+                        completionPercentage: 0
+                    });
+
+                } else {
+                    // Day 76-90: Full-Length Mocks and Analysis
+                    const isMockDay = day % 2 !== 0;
+                    const mockNumber = Math.ceil((day - 75) / 2);
+                    const taskName = isMockDay
+                        ? `FULL MOCK TEST (${mockNumber} of 8)`
+                        : `MOCK ANALYSIS & Correction: Review MOCK ${mockNumber-1} (Focus on Errors)`;
+
+                    dayTasks.push({
+                        subject: 'Mock Test',
+                        name: taskName,
+                        type: isMockDay ? 'FULL_MOCK' : 'ANALYSIS',
+                        completed: false
+                    });
+
+                    tempPlan.push({
+                        day: day,
+                        tasks: dayTasks,
+                        subjectSummary: 'MOCK/ANALYSIS',
+                        completed: false,
+                        completionPercentage: 0
+                    });
+                }
+            }
+
+            applyPrioritySchedule(tempPlan);
+            studyPlan = tempPlan;
+            savePlan();
+            renderStudyPlan();
+            updateTabContentVisibility();
+        }
+
+
+        // --- STUDY PLAN RENDERING ---
+
+        function renderStudyPlan() {
+            const planContainer = document.getElementById('studyPlanContainer');
+            const planContent = document.getElementById('planContent');
+            if (!planContainer || !planContent) {
+                return;
+            }
+
+            planContent.innerHTML = '';
+
+            if (studyPlan.length === 0) {
+                planContent.innerHTML = '<div class="p-4 text-sm text-gray-500">Generate your study plan to see daily tasks here.</div>';
+                updateTabContentVisibility();
+                return;
+            }
+
+            // Render Daily Plan
+            studyPlan.forEach(item => {
+                const row = document.createElement('div');
+                const isDayCompleted = item.completed;
+                const { dateString, dayName } = getPlanDate(item.day);
+                
+                const dayClasses = [
+                    'p-4',
+                    'transition',
+                    'duration-150',
+                    dayName === 'Sun' ? 'sunday-highlight' : '',
+                    isDayCompleted ? 'completed-day' : 'hover:bg-indigo-50'
+                ].filter(Boolean).join(' ');
+
+                row.className = dayClasses;
+
+                row.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div class="flex space-x-4 items-center mb-2">
+                            <div class="font-extrabold text-lg text-pink-600">Day ${item.day}</div>
+                            <div class="font-medium text-lg text-gray-500">(${dayName}, ${dateString})</div>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-gray-200 pt-3 mt-2">
+                        <div class="space-y-3 pt-2">
+                            ${item.tasks.map((task, index) => {
+                                const detail = getTaskDetail(task);
+                                const detailHTML = detail ? `<div class="text-xs text-gray-500 mt-1 leading-snug">${detail}</div>` : '';
+                                const subjectClass = (task.subject || '').toLowerCase().includes('physics') ? 'physics' :
+                                                       (task.subject || '').toLowerCase().includes('chemistry') ? 'chemistry' :
+                                                       (task.subject || '').toLowerCase().includes('math') ? 'mathematics' :
+                                                       (task.subject || '').toLowerCase().includes('mock') ? 'mock' : '';
+                                return `
+                                    <div class="flex items-center justify-between p-3 rounded-lg border border-gray-200 bg-white">
+                                        <div class="flex-grow pr-4">
+                                            <div class="text-sm text-gray-800 flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                                                <span class="subject-tag ${subjectClass}">${task.subject}</span>
+                                                <span>${task.name}</span>
+                                            </div>
+                                            ${detailHTML}
+                                        </div>
+                                        <label class="flex items-center space-x-2 flex-shrink-0">
+                                            <span class="text-xs font-medium ${task.completed ? 'text-green-600' : 'text-gray-500'}">${task.completed ? 'Done' : 'Complete'}</span>
+                                            <input type="checkbox" data-day="${item.day}" data-task-index="${index}" ${task.completed ? 'checked' : ''} class="task-checkbox form-checkbox h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                                        </label>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                planContent.appendChild(row);
+                
+                // Attach event listener for the new class 'task-checkbox'
+                const taskCheckboxes = row.querySelectorAll('.task-checkbox');
+                taskCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', (e) => {
+                        const day = parseInt(e.target.dataset.day);
+                        const taskIndex = parseInt(e.target.dataset.taskIndex);
+                        handlePlanStatusChange(day, taskIndex, e.target.checked);
+                    });
+                });
+            });
+            updateTabContentVisibility();
+            if (selectedSubject === STUDY_PLAN_TAB) {
+                planContainer.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        
+        // --- INITIALIZATION ---
+        
+        window.onload = function() {
+            loadStatus();
+            loadPlan();
+            
+            renderTabSummary(computeSummaryData().metrics);
+            renderSubjectTabs();
+            renderTable();
+            if (studyPlan.length > 0) {
+                renderStudyPlan();
+            } else {
+                generateStudyPlan();
+            }
+            const downloadBtn = document.getElementById('downloadExcelBtn');
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', downloadAssessmentExcel);
+            }
+            const printBtn = document.getElementById('printPlanBtn');
+            if (printBtn) {
+                printBtn.addEventListener('click', () => window.print());
+            }
+        };
+
+    </script>
+</body>
+</html>
