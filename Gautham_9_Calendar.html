@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IX CFS Activity Calendar 2026-2027</title>
+  <style>
+    :root {
+      --bg:#eef3fb; --panel:#ffffff; --ink:#172033; --muted:#63708a; --line:#d9e2ef;
+      --brand:#0b2d63; --brand2:#1b68d2; --holiday:#fff4b8; --break:#e9f7ef; --exam:#ffe0e0;
+      --event:#e8f0ff; --ptm:#f2e8ff; --regular:#ffffff; --shadow:0 14px 35px rgba(18,38,63,.10);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%; margin:0; font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; color:var(--ink); background:linear-gradient(135deg,#eef3fb 0%,#f8fbff 100%);}
+    body{overflow:hidden}
+    .app{height:100vh; display:flex; flex-direction:column; padding:14px; gap:12px}
+    header{background:var(--panel); border:1px solid var(--line); border-radius:22px; box-shadow:var(--shadow); padding:14px 16px; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:14px;}
+    .title{min-width:0}
+    .kicker{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--brand2); font-weight:800}
+    h1{font-size:clamp(20px,2.5vw,34px); margin:2px 0 0; line-height:1.1; color:var(--brand)}
+    .subtitle{font-size:13px; color:var(--muted); margin-top:4px}
+    .monthNav{display:flex; align-items:center; justify-content:center; gap:10px;}
+    .btn{border:0; background:var(--brand); color:#fff; padding:10px 14px; border-radius:14px; font-weight:800; cursor:pointer; box-shadow:0 8px 16px rgba(11,45,99,.18)}
+    .btn:hover{filter:brightness(1.08)}
+    .btn.secondary{background:#edf4ff; color:var(--brand); border:1px solid #cfe0ff; box-shadow:none}
+    select{border:1px solid var(--line); border-radius:14px; padding:10px 12px; font-weight:800; color:var(--brand); background:#fff; min-width:210px; text-align:center}
+    .tools{display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap}
+    .legend{display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:12px; color:var(--muted)}
+    .pill{display:inline-flex; align-items:center; gap:6px; white-space:nowrap}
+    .dot{width:12px; height:12px; border-radius:4px; border:1px solid rgba(0,0,0,.12)}
+    .calendar{flex:1; min-height:0; background:var(--panel); border:1px solid var(--line); border-radius:24px; box-shadow:var(--shadow); padding:12px; display:grid; grid-template-rows:auto 1fr; gap:10px}
+    .weekdays{display:grid; grid-template-columns:repeat(7,1fr); gap:8px}
+    .weekday{text-align:center; color:var(--muted); font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:.08em; padding:8px 0}
+    .grid{display:grid; grid-template-columns:repeat(7,1fr); grid-auto-rows:1fr; gap:8px; min-height:0}
+    .cell{border:1px solid var(--line); border-radius:18px; padding:10px; min-width:0; overflow:hidden; display:flex; flex-direction:column; gap:8px; background:var(--regular); position:relative}
+    .cell.out{opacity:.22; background:#f6f8fc}
+    .cell.holiday{background:var(--holiday); border-color:#eadb72}
+    .cell.break{background:var(--break); border-color:#badfc8}
+    .cell.exam{background:var(--exam); border-color:#f6b2b2}
+    .cell.event{background:var(--event); border-color:#b6cdf9}
+    .cell.ptm{background:var(--ptm); border-color:#d8c2ff}
+    .cell.today{outline:3px solid var(--brand2); outline-offset:-3px}
+    .dateRow{display:flex; align-items:center; justify-content:space-between; gap:6px}
+    .dateNum{font-size:clamp(17px,1.8vw,26px); font-weight:950; color:var(--brand)}
+    .dayCount{font-size:12px; color:var(--muted); font-weight:900; border:1px solid rgba(0,0,0,.10); padding:3px 7px; border-radius:999px; background:rgba(255,255,255,.65)}
+    .activity{display:block !important; min-height:30px; font-size:clamp(12px,1.05vw,15px); font-weight:900; line-height:1.18; overflow:visible; word-break:break-word; color:#172033; padding:2px 0 0}
+    .sourceNote{display:block; margin-top:4px; font-size:11px; line-height:1.15; color:#6a5b00; font-weight:800}
+    .activityBadge{display:block; padding:5px 7px; border-radius:10px; background:rgba(255,255,255,.72); border:1px solid rgba(0,0,0,.08); box-shadow:0 1px 0 rgba(255,255,255,.5) inset}
+    .empty{color:#a3acbb; font-weight:700}
+    .meta{margin-top:auto; font-size:11px; color:var(--muted); font-weight:800}
+    footer{font-size:11px; color:var(--muted); text-align:right; padding:0 4px}
+    @media(max-width:900px){
+      body{overflow:auto} .app{height:auto; min-height:100vh} header{grid-template-columns:1fr; align-items:stretch} .tools{justify-content:flex-start} .grid{grid-auto-rows:minmax(115px,1fr)}
+      .calendar{min-height:760px} select{min-width:100%} .monthNav{display:grid; grid-template-columns:auto 1fr auto}
+    }
+    @media print{body{overflow:visible;background:#fff} .app{height:auto;padding:0} header{box-shadow:none;border:0} .tools,.monthNav .btn{display:none} .calendar{box-shadow:none;border:0} .cell{break-inside:avoid}}
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header>
+      <div class="title">
+        <div class="kicker">FIITJEE Global School</div>
+        <h1>IX CFS Activity Calendar</h1>
+        <div class="subtitle">Academic Year 2026-2027</div>
+      </div>
+      <div class="monthNav">
+        <button class="btn" id="prevBtn" title="Previous month">‹ Prev</button>
+        <select id="monthSelect" aria-label="Select month"></select>
+        <button class="btn" id="nextBtn" title="Next month">Next ›</button>
+      </div>
+      <div class="tools">
+        <button class="btn secondary" id="todayBtn">Current Month</button>
+        <button class="btn secondary" id="fullBtn">Full Screen</button>
+        <button class="btn secondary" onclick="window.print()">Print</button>
+      </div>
+    </header>
+
+    <section class="calendar">
+      <div class="weekdays">
+        <div class="weekday">Sun</div><div class="weekday">Mon</div><div class="weekday">Tue</div><div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div>
+      </div>
+      <div class="grid" id="grid"></div>
+    </section>
+
+    <div class="legend" aria-label="Legend">
+      <span class="pill"><span class="dot" style="background:var(--holiday)"></span>Holiday</span>
+      <span class="pill"><span class="dot" style="background:var(--break)"></span>Break</span>
+      <span class="pill"><span class="dot" style="background:var(--exam)"></span>Exam / Test / Prep off</span>
+      <span class="pill"><span class="dot" style="background:var(--event)"></span>Event / Celebration</span>
+      <span class="pill"><span class="dot" style="background:var(--ptm)"></span>PTM</span>
+    </div>
+    <footer>Prepared from IX CFS-only activity calendar extracted from the FGSC AY 2026-27 calendar.</footer>
+  </div>
+<script>
+const DATA = [{"date": "2026-04-01", "activity": "-", "day": "-"}, {"date": "2026-04-02", "activity": "-", "day": "-"}, {"date": "2026-04-03", "activity": "Good Friday", "day": "-"}, {"date": "2026-04-04", "activity": "Orientation", "day": "1"}, {"date": "2026-04-05", "activity": "Holiday", "day": "H"}, {"date": "2026-04-06", "activity": "Bridge Course", "day": "2"}, {"date": "2026-04-07", "activity": "Bridge Course", "day": "3"}, {"date": "2026-04-08", "activity": "Bridge Course", "day": "4"}, {"date": "2026-04-09", "activity": "Bridge Course", "day": "5"}, {"date": "2026-04-10", "activity": "Bridge Course", "day": "6"}, {"date": "2026-04-11", "activity": "Bridge Course", "day": "7"}, {"date": "2026-04-12", "activity": "Holiday", "day": "H"}, {"date": "2026-04-13", "activity": "Course Commencement", "day": "8"}, {"date": "2026-04-14", "activity": "Tamil New Year", "day": "H"}, {"date": "2026-04-15", "activity": "-", "day": "-"}, {"date": "2026-04-16", "activity": "-", "day": "-"}, {"date": "2026-04-17", "activity": "-", "day": "-"}, {"date": "2026-04-18", "activity": "SA/Robo Expresso (AY 2025-2026)", "day": "12"}, {"date": "2026-04-19", "activity": "Holiday", "day": "H"}, {"date": "2026-04-20", "activity": "-", "day": "-"}, {"date": "2026-04-21", "activity": "-", "day": "-"}, {"date": "2026-04-22", "activity": "-", "day": "-"}, {"date": "2026-04-23", "activity": "-", "day": "-"}, {"date": "2026-04-24", "activity": "Login test", "day": "17"}, {"date": "2026-04-25", "activity": "-", "day": "-"}, {"date": "2026-04-26", "activity": "Holiday", "day": "H"}, {"date": "2026-04-27", "activity": "Shuffled Batches Starts Module 1", "day": "19"}, {"date": "2026-04-28", "activity": "-", "day": "-"}, {"date": "2026-04-29", "activity": "-", "day": "-"}, {"date": "2026-04-30", "activity": "-", "day": "-"}, {"date": "2026-05-01", "activity": "May Day", "day": "H"}, {"date": "2026-05-02", "activity": "-", "day": "-"}, {"date": "2026-05-03", "activity": "Holiday", "day": "H"}, {"date": "2026-05-04", "activity": "-", "day": "-"}, {"date": "2026-05-05", "activity": "-", "day": "-"}, {"date": "2026-05-06", "activity": "-", "day": "-"}, {"date": "2026-05-07", "activity": "-", "day": "-"}, {"date": "2026-05-08", "activity": "-", "day": "-"}, {"date": "2026-05-09", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-10", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-11", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-12", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-13", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-14", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-15", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-16", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-17", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-18", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-19", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-20", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-21", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-22", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-23", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-24", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-25", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-26", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-27", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-28", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-29", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-30", "activity": "Summer Break", "day": "H"}, {"date": "2026-05-31", "activity": "Summer Break", "day": "H"}, {"date": "2026-06-01", "activity": "Summer Break", "day": "H"}, {"date": "2026-06-02", "activity": "Summer Break", "day": "H"}, {"date": "2026-06-03", "activity": "Summer Break", "day": "H"}, {"date": "2026-06-04", "activity": "School Reopens", "day": "29"}, {"date": "2026-06-05", "activity": "-", "day": "-"}, {"date": "2026-06-06", "activity": "-", "day": "-"}, {"date": "2026-06-07", "activity": "Holiday", "day": "H"}, {"date": "2026-06-08", "activity": "-", "day": "-"}, {"date": "2026-06-09", "activity": "-", "day": "-"}, {"date": "2026-06-10", "activity": "-", "day": "-"}, {"date": "2026-06-11", "activity": "-", "day": "-"}, {"date": "2026-06-12", "activity": "-", "day": "-"}, {"date": "2026-06-13", "activity": "-", "day": "-"}, {"date": "2026-06-14", "activity": "Holiday", "day": "H"}, {"date": "2026-06-15", "activity": "-", "day": "-"}, {"date": "2026-06-16", "activity": "-", "day": "-"}, {"date": "2026-06-17", "activity": "-", "day": "-"}, {"date": "2026-06-18", "activity": "-", "day": "-"}, {"date": "2026-06-19", "activity": "-", "day": "-"}, {"date": "2026-06-20", "activity": "Intl Yoga Day Celebration/SA/MC", "day": "43"}, {"date": "2026-06-21", "activity": "Holiday", "day": "H"}, {"date": "2026-06-22", "activity": "-", "day": "-"}, {"date": "2026-06-23", "activity": "-", "day": "-"}, {"date": "2026-06-24", "activity": "-", "day": "-"}, {"date": "2026-06-25", "activity": "-", "day": "-"}, {"date": "2026-06-26", "activity": "Muharram (Tentative)", "day": "H"}, {"date": "2026-06-27", "activity": "-", "day": "-"}, {"date": "2026-06-28", "activity": "Holiday", "day": "H"}, {"date": "2026-06-29", "activity": "-", "day": "-"}, {"date": "2026-06-30", "activity": "-", "day": "-"}, {"date": "2026-07-01", "activity": "-", "day": "-"}, {"date": "2026-07-02", "activity": "-", "day": "-"}, {"date": "2026-07-03", "activity": "Investiture Ceremony", "day": "53"}, {"date": "2026-07-04", "activity": "-", "day": "-"}, {"date": "2026-07-05", "activity": "Holiday", "day": "H"}, {"date": "2026-07-06", "activity": "-", "day": "-"}, {"date": "2026-07-07", "activity": "-", "day": "-"}, {"date": "2026-07-08", "activity": "-", "day": "-"}, {"date": "2026-07-09", "activity": "-", "day": "-"}, {"date": "2026-07-10", "activity": "-", "day": "-"}, {"date": "2026-07-11", "activity": "-", "day": "-"}, {"date": "2026-07-12", "activity": "Holiday", "day": "H"}, {"date": "2026-07-13", "activity": "PT 1", "day": "61"}, {"date": "2026-07-14", "activity": "PT 1", "day": "62"}, {"date": "2026-07-15", "activity": "PT 1", "day": "63"}, {"date": "2026-07-16", "activity": "PT 1", "day": "64"}, {"date": "2026-07-17", "activity": "PT 1", "day": "65"}, {"date": "2026-07-18", "activity": "PT 1", "day": "66"}, {"date": "2026-07-19", "activity": "Holiday", "day": "H"}, {"date": "2026-07-20", "activity": "Module 1", "day": "67"}, {"date": "2026-07-21", "activity": "Module 1", "day": "68"}, {"date": "2026-07-22", "activity": "-", "day": "-"}, {"date": "2026-07-23", "activity": "-", "day": "-"}, {"date": "2026-07-24", "activity": "-", "day": "-"}, {"date": "2026-07-25", "activity": "-", "day": "-"}, {"date": "2026-07-26", "activity": "Checkmate Chronicles Tentative", "day": "H"}, {"date": "2026-07-27", "activity": "-", "day": "-"}, {"date": "2026-07-28", "activity": "-", "day": "-"}, {"date": "2026-07-29", "activity": "-", "day": "-"}, {"date": "2026-07-30", "activity": "-", "day": "-"}, {"date": "2026-07-31", "activity": "-", "day": "-"}, {"date": "2026-08-01", "activity": "Kalrav 2026", "day": "78"}, {"date": "2026-08-02", "activity": "Holiday", "day": "H"}, {"date": "2026-08-03", "activity": "PTM (One on One)", "day": "79"}, {"date": "2026-08-04", "activity": "-", "day": "-"}, {"date": "2026-08-05", "activity": "-", "day": "-"}, {"date": "2026-08-06", "activity": "-", "day": "-"}, {"date": "2026-08-07", "activity": "-", "day": "-"}, {"date": "2026-08-08", "activity": "-", "day": "-"}, {"date": "2026-08-09", "activity": "Holiday", "day": "H"}, {"date": "2026-08-10", "activity": "-", "day": "-"}, {"date": "2026-08-11", "activity": "-", "day": "-"}, {"date": "2026-08-12", "activity": "-", "day": "-"}, {"date": "2026-08-13", "activity": "-", "day": "-"}, {"date": "2026-08-14", "activity": "Aadi Pooram (Tentative)", "day": "H"}, {"date": "2026-08-15", "activity": "Independence Day Celebration", "day": "89"}, {"date": "2026-08-16", "activity": "Holiday", "day": "H"}, {"date": "2026-08-17", "activity": "-", "day": "-"}, {"date": "2026-08-18", "activity": "-", "day": "-"}, {"date": "2026-08-19", "activity": "-", "day": "-"}, {"date": "2026-08-20", "activity": "-", "day": "-"}, {"date": "2026-08-21", "activity": "-", "day": "-"}, {"date": "2026-08-22", "activity": "-", "day": "-"}, {"date": "2026-08-23", "activity": "Holiday", "day": "H"}, {"date": "2026-08-24", "activity": "-", "day": "-"}, {"date": "2026-08-25", "activity": "-", "day": "-"}, {"date": "2026-08-26", "activity": "Milad-un-nabi (Tentative)", "day": "H"}, {"date": "2026-08-27", "activity": "-", "day": "-"}, {"date": "2026-08-28", "activity": "Milanotsav", "day": "99"}, {"date": "2026-08-29", "activity": "Milanotsav", "day": "100"}, {"date": "2026-08-30", "activity": "Holiday", "day": "H"}, {"date": "2026-08-31", "activity": "-", "day": "-"}, {"date": "2026-09-01", "activity": "-", "day": "-"}, {"date": "2026-09-02", "activity": "-", "day": "-"}, {"date": "2026-09-03", "activity": "-", "day": "-"}, {"date": "2026-09-04", "activity": "Janmashtami", "day": "H"}, {"date": "2026-09-05", "activity": "Teacher's Day Celebration", "day": "105"}, {"date": "2026-09-06", "activity": "Holiday", "day": "H"}, {"date": "2026-09-07", "activity": "-", "day": "-"}, {"date": "2026-09-08", "activity": "-", "day": "-"}, {"date": "2026-09-09", "activity": "-", "day": "-"}, {"date": "2026-09-10", "activity": "-", "day": "-"}, {"date": "2026-09-11", "activity": "-", "day": "-"}, {"date": "2026-09-12", "activity": "-", "day": "-"}, {"date": "2026-09-13", "activity": "Holiday", "day": "H"}, {"date": "2026-09-14", "activity": "Vinayaka Chaturthi", "day": "H"}, {"date": "2026-09-15", "activity": "Quarterly", "day": "112"}, {"date": "2026-09-16", "activity": "Prep off", "day": "H"}, {"date": "2026-09-17", "activity": "Quarterly", "day": "113"}, {"date": "2026-09-18", "activity": "Prep off", "day": "H"}, {"date": "2026-09-19", "activity": "Quarterly", "day": "114"}, {"date": "2026-09-20", "activity": "Holiday", "day": "H"}, {"date": "2026-09-21", "activity": "Quarterly", "day": "115"}, {"date": "2026-09-22", "activity": "Prep off", "day": "H"}, {"date": "2026-09-23", "activity": "Quarterly", "day": "116"}, {"date": "2026-09-24", "activity": "Prep off", "day": "H"}, {"date": "2026-09-25", "activity": "Quarterly", "day": "117"}, {"date": "2026-09-26", "activity": "Prep off", "day": "H"}, {"date": "2026-09-27", "activity": "Holiday", "day": "H"}, {"date": "2026-09-28", "activity": "Module 2", "day": "118"}, {"date": "2026-09-29", "activity": "Module 2", "day": "119"}, {"date": "2026-09-30", "activity": "Term 1 Break (Educational Expedition)", "day": "H"}, {"date": "2026-10-01", "activity": "Term 1 Break (Educational Expedition)", "day": "H"}, {"date": "2026-10-02", "activity": "Term 1 Break (Educational Expedition)", "day": "H"}, {"date": "2026-10-03", "activity": "Term 1 Break (Educational Expedition)", "day": "H"}, {"date": "2026-10-04", "activity": "Term 1 Break", "day": "H"}, {"date": "2026-10-05", "activity": "School Reopens", "day": "120"}, {"date": "2026-10-06", "activity": "-", "day": "-"}, {"date": "2026-10-07", "activity": "-", "day": "-"}, {"date": "2026-10-08", "activity": "-", "day": "-"}, {"date": "2026-10-09", "activity": "-", "day": "-"}, {"date": "2026-10-10", "activity": "-", "day": "-"}, {"date": "2026-10-11", "activity": "Holiday", "day": "H"}, {"date": "2026-10-12", "activity": "-", "day": "-"}, {"date": "2026-10-13", "activity": "-", "day": "-"}, {"date": "2026-10-14", "activity": "-", "day": "-"}, {"date": "2026-10-15", "activity": "-", "day": "-"}, {"date": "2026-10-16", "activity": "-", "day": "-"}, {"date": "2026-10-17", "activity": "PTM-Group", "day": "131"}, {"date": "2026-10-18", "activity": "Holiday", "day": "H"}, {"date": "2026-10-19", "activity": "Ayudha pooja", "day": "H"}, {"date": "2026-10-20", "activity": "VijayaDasami", "day": "H"}, {"date": "2026-10-21", "activity": "-", "day": "-"}, {"date": "2026-10-22", "activity": "-", "day": "-"}, {"date": "2026-10-23", "activity": "-", "day": "-"}, {"date": "2026-10-24", "activity": "MC/ Robo Talento", "day": "135"}, {"date": "2026-10-25", "activity": "Holiday", "day": "H"}, {"date": "2026-10-26", "activity": "-", "day": "-"}, {"date": "2026-10-27", "activity": "-", "day": "-"}, {"date": "2026-10-28", "activity": "-", "day": "-"}, {"date": "2026-10-29", "activity": "-", "day": "-"}, {"date": "2026-10-30", "activity": "Tarang (Tentative)", "day": "H"}, {"date": "2026-10-31", "activity": "Tarang (Tentative)", "day": "H"}, {"date": "2026-11-01", "activity": "Holiday", "day": "H"}, {"date": "2026-11-02", "activity": "-", "day": "-"}, {"date": "2026-11-03", "activity": "-", "day": "-"}, {"date": "2026-11-04", "activity": "-", "day": "-"}, {"date": "2026-11-05", "activity": "-", "day": "-"}, {"date": "2026-11-06", "activity": "Diwali Celebration", "day": "144"}, {"date": "2026-11-07", "activity": "Diwali Holiday", "day": "H"}, {"date": "2026-11-08", "activity": "Diwali Holiday", "day": "H"}, {"date": "2026-11-09", "activity": "Diwali Holiday", "day": "H"}, {"date": "2026-11-10", "activity": "-", "day": "-"}, {"date": "2026-11-11", "activity": "-", "day": "-"}, {"date": "2026-11-12", "activity": "-", "day": "-"}, {"date": "2026-11-13", "activity": "-", "day": "-"}, {"date": "2026-11-14", "activity": "SA/MC ScientiFiG", "day": "149"}, {"date": "2026-11-15", "activity": "Holiday", "day": "H"}, {"date": "2026-11-16", "activity": "-", "day": "-"}, {"date": "2026-11-17", "activity": "-", "day": "-"}, {"date": "2026-11-18", "activity": "-", "day": "-"}, {"date": "2026-11-19", "activity": "-", "day": "-"}, {"date": "2026-11-20", "activity": "-", "day": "-"}, {"date": "2026-11-21", "activity": "-", "day": "-"}, {"date": "2026-11-22", "activity": "Holiday", "day": "H"}, {"date": "2026-11-23", "activity": "-", "day": "-"}, {"date": "2026-11-24", "activity": "-", "day": "-"}, {"date": "2026-11-25", "activity": "-", "day": "-"}, {"date": "2026-11-26", "activity": "-", "day": "-"}, {"date": "2026-11-27", "activity": "-", "day": "-"}, {"date": "2026-11-28", "activity": "-", "day": "-"}, {"date": "2026-11-29", "activity": "Holiday", "day": "H"}, {"date": "2026-11-30", "activity": "PT2", "day": "162"}, {"date": "2026-12-01", "activity": "PT2", "day": "163"}, {"date": "2026-12-02", "activity": "PT2", "day": "164"}, {"date": "2026-12-03", "activity": "PT2", "day": "165"}, {"date": "2026-12-04", "activity": "PT2", "day": "166"}, {"date": "2026-12-05", "activity": "PT2", "day": "167"}, {"date": "2026-12-06", "activity": "Holiday", "day": "H"}, {"date": "2026-12-07", "activity": "Module 3", "day": "168"}, {"date": "2026-12-08", "activity": "Module 3", "day": "169"}, {"date": "2026-12-09", "activity": "-", "day": "-"}, {"date": "2026-12-10", "activity": "-", "day": "-"}, {"date": "2026-12-11", "activity": "-", "day": "-"}, {"date": "2026-12-12", "activity": "-", "day": "-"}, {"date": "2026-12-13", "activity": "Holiday", "day": "H"}, {"date": "2026-12-14", "activity": "-", "day": "-"}, {"date": "2026-12-15", "activity": "-", "day": "-"}, {"date": "2026-12-16", "activity": "-", "day": "-"}, {"date": "2026-12-17", "activity": "-", "day": "-"}, {"date": "2026-12-18", "activity": "-", "day": "-"}, {"date": "2026-12-19", "activity": "PTM One to one", "day": "179"}, {"date": "2026-12-20", "activity": "Holiday", "day": "H"}, {"date": "2026-12-21", "activity": "-", "day": "-"}, {"date": "2026-12-22", "activity": "-", "day": "-"}, {"date": "2026-12-23", "activity": "-", "day": "-"}, {"date": "2026-12-24", "activity": "SA/MC (Christmas celebration)", "day": "183"}, {"date": "2026-12-25", "activity": "Christmas Day", "day": "H"}, {"date": "2026-12-26", "activity": "Christmas Break", "day": "H"}, {"date": "2026-12-27", "activity": "Christmas Break", "day": "H"}, {"date": "2026-12-28", "activity": "Christmas Break", "day": "H"}, {"date": "2026-12-29", "activity": "Christmas Break", "day": "H"}, {"date": "2026-12-30", "activity": "Christmas Break", "day": "H"}, {"date": "2026-12-31", "activity": "Christmas Break", "day": "H"}, {"date": "2027-01-01", "activity": "New Year Holiday", "day": "H"}, {"date": "2027-01-02", "activity": "Holiday", "day": "H"}, {"date": "2027-01-03", "activity": "Holiday", "day": "H"}, {"date": "2027-01-04", "activity": "School Reopens", "day": "184"}, {"date": "2027-01-05", "activity": "Annual Practical Exam", "day": "185"}, {"date": "2027-01-06", "activity": "-", "day": "-"}, {"date": "2027-01-07", "activity": "-", "day": "-"}, {"date": "2027-01-08", "activity": "-", "day": "-"}, {"date": "2027-01-09", "activity": "Sports day", "day": "189"}, {"date": "2027-01-10", "activity": "Holiday", "day": "H"}, {"date": "2027-01-11", "activity": "-", "day": "-"}, {"date": "2027-01-12", "activity": "-", "day": "-"}, {"date": "2027-01-13", "activity": "SA/MC Pongal celebration", "day": "192"}, {"date": "2027-01-14", "activity": "Boghi", "day": "H"}, {"date": "2027-01-15", "activity": "Pongal", "day": "H"}, {"date": "2027-01-16", "activity": "Thiruvalluvar day", "day": "H"}, {"date": "2027-01-17", "activity": "Kannum pongal", "day": "H"}, {"date": "2027-01-18", "activity": "-", "day": "-"}, {"date": "2027-01-19", "activity": "-", "day": "-"}, {"date": "2027-01-20", "activity": "-", "day": "-"}, {"date": "2027-01-21", "activity": "-", "day": "-"}, {"date": "2027-01-22", "activity": "-", "day": "-"}, {"date": "2027-01-23", "activity": "Thai Poosam", "day": "H"}, {"date": "2027-01-24", "activity": "Holiday", "day": "H"}, {"date": "2027-01-25", "activity": "-", "day": "-"}, {"date": "2027-01-26", "activity": "Republic Day Celeberation", "day": "198"}, {"date": "2027-01-27", "activity": "-", "day": "-"}, {"date": "2027-01-28", "activity": "-", "day": "-"}, {"date": "2027-01-29", "activity": "-", "day": "-"}, {"date": "2027-01-30", "activity": "Robo Expresso", "day": "202"}, {"date": "2027-01-31", "activity": "Holiday", "day": "H"}, {"date": "2027-02-01", "activity": "-", "day": "-"}, {"date": "2027-02-02", "activity": "-", "day": "-"}, {"date": "2027-02-03", "activity": "-", "day": "-"}, {"date": "2027-02-04", "activity": "-", "day": "-"}, {"date": "2027-02-05", "activity": "-", "day": "-"}, {"date": "2027-02-06", "activity": "-", "day": "-"}, {"date": "2027-02-07", "activity": "Holiday", "day": "H"}, {"date": "2027-02-08", "activity": "-", "day": "-"}, {"date": "2027-02-09", "activity": "-", "day": "-"}, {"date": "2027-02-10", "activity": "-", "day": "-"}, {"date": "2027-02-11", "activity": "-", "day": "-"}, {"date": "2027-02-12", "activity": "-", "day": "-"}, {"date": "2027-02-13", "activity": "Prep off", "day": "H"}, {"date": "2027-02-14", "activity": "Holiday", "day": "H"}, {"date": "2027-02-15", "activity": "Module 4", "day": "214"}, {"date": "2027-02-16", "activity": "Module 4", "day": "215"}, {"date": "2027-02-17", "activity": "Prep off", "day": "H"}, {"date": "2027-02-18", "activity": "Annual Exam", "day": "216"}, {"date": "2027-02-19", "activity": "Prep off", "day": "H"}, {"date": "2027-02-20", "activity": "Annual Exam", "day": "217"}, {"date": "2027-02-21", "activity": "Holiday", "day": "H"}, {"date": "2027-02-22", "activity": "Annual Exam", "day": "218"}, {"date": "2027-02-23", "activity": "Prep off", "day": "H"}, {"date": "2027-02-24", "activity": "Annual Exam", "day": "219"}, {"date": "2027-02-25", "activity": "Prep off", "day": "220"}, {"date": "2027-02-26", "activity": "Annual Exam", "day": "221"}, {"date": "2027-02-27", "activity": "Annual Exam", "day": "222"}, {"date": "2027-02-28", "activity": "Holiday", "day": "H"}, {"date": "2027-03-01", "activity": "Revision Classes (Review)", "day": "223"}, {"date": "2027-03-02", "activity": "Revision Classes (Review)", "day": "224"}, {"date": "2027-03-03", "activity": "Revision Classes (Review)", "day": "225"}, {"date": "2027-03-04", "activity": "Revision Classes (Review)", "day": "226"}, {"date": "2027-03-05", "activity": "Review exam -1", "day": "227"}, {"date": "2027-03-06", "activity": "Review exam -2", "day": "228"}, {"date": "2027-03-07", "activity": "Holiday", "day": "H"}, {"date": "2027-03-08", "activity": "Rejuvenation Break", "day": "H"}, {"date": "2027-03-09", "activity": "Rejuvenation Break", "day": "H"}, {"date": "2027-03-10", "activity": "Rejuvenation Break", "day": "H"}, {"date": "2027-03-11", "activity": "Rejuvenation Break", "day": "H"}, {"date": "2027-03-12", "activity": "Rejuvenation Break", "day": "H"}, {"date": "2027-03-13", "activity": "Orientation/Result Declaration", "day": "-"}, {"date": "2027-03-14", "activity": "Holiday", "day": "H"}, {"date": "2027-03-15", "activity": "Course Commencement Class X AY (27-28)", "day": "-"}, {"date": "2027-03-16", "activity": "-", "day": "-"}, {"date": "2027-03-17", "activity": "-", "day": "-"}, {"date": "2027-03-18", "activity": "-", "day": "-"}, {"date": "2027-03-19", "activity": "-", "day": "-"}, {"date": "2027-03-20", "activity": "-", "day": "-"}, {"date": "2027-03-21", "activity": "Holiday", "day": "H"}, {"date": "2027-03-22", "activity": "-", "day": "-"}, {"date": "2027-03-23", "activity": "-", "day": "-"}, {"date": "2027-03-24", "activity": "-", "day": "-"}, {"date": "2027-03-25", "activity": "-", "day": "-"}, {"date": "2027-03-26", "activity": "Good Friday", "day": "H"}, {"date": "2027-03-27", "activity": "-", "day": "-"}, {"date": "2027-03-28", "activity": "Holiday", "day": "H"}, {"date": "2027-03-29", "activity": "-", "day": "-"}, {"date": "2027-03-30", "activity": "-", "day": "-"}, {"date": "2027-03-31", "activity": "-", "day": "-"}];
+const byDate = Object.fromEntries(DATA.map(e => [e.date, e]));
+const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const months = [...new Set(DATA.map(e => e.date.slice(0,7)))];
+let currentIndex = Math.max(0, months.indexOf(new Date().toISOString().slice(0,7)));
+if(currentIndex < 0) currentIndex = 0;
+const select = document.getElementById('monthSelect');
+months.forEach((m,i)=>{
+  const [y,mo] = m.split('-').map(Number);
+  const opt = document.createElement('option');
+  opt.value = i; opt.textContent = `${monthNames[mo-1]} ${y}`;
+  select.appendChild(opt);
+});
+function classify(e) {
+  const a = (e?.activity || '').toLowerCase();
+  const day = e?.day || '';
+  if(day === 'H' || /holiday|pooja|poosam|pongal|good friday|may day|new year|chaturthi|janmashtami|diwali|christmas|muharram|nabi|aadi|tarang/.test(a)) return 'holiday';
+  if(/break|rejuvenation/.test(a)) return 'break';
+  if(/exam|test|quarterly|annual|pre board|prep|revision|practical|pt\s?1|pt\s?2|pt\s?3|pt2|review/.test(a)) return 'exam';
+  if(/ptm/.test(a)) return 'ptm';
+  if(a && a !== '-' && /celebration|ceremony|orientation|kalrav|milanotsav|robo|scientifig|checkmate|module|course|school reopens|login|yoga|wish|sports/.test(a)) return 'event';
+  return '';
+}
+function render() {
+  const ym = months[currentIndex];
+  select.value = String(currentIndex);
+  const [year, month] = ym.split('-').map(Number);
+  const first = new Date(year, month-1, 1);
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const startOffset = first.getDay();
+  const totalCells = Math.ceil((startOffset + daysInMonth)/7)*7;
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  const todayISO = new Date().toISOString().slice(0,10);
+  for(let i=0;i<totalCells;i++) {
+    const cell = document.createElement('div');
+    const dayNum = i - startOffset + 1;
+    if(dayNum < 1 || dayNum > daysInMonth) {
+      cell.className = 'cell out';
+      grid.appendChild(cell); continue;
+    }
+    const iso = `${year}-${String(month).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`;
+    const e = byDate[iso] || {activity:'-', day:'-'};
+    const cls = classify(e);
+    cell.className = `cell ${cls} ${iso===todayISO?'today':''}`;
+    const weekdayName = new Date(iso+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long'});
+    const act = displayActivity(e, weekdayName);
+    cell.innerHTML = `
+      <div class="dateRow"><div class="dateNum">${dayNum}</div><div class="dayCount">Day: ${escapeHtml(e.day || '-')}</div></div>
+      <div class="activity">${act}</div>
+      <div class="meta">${weekdayName}</div>`;
+    grid.appendChild(cell);
+  }
+}
+function escapeHtml(s) { return String(s).replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+function displayActivity(e, weekdayName) {
+  const activity = String(e.activity || '-').trim();
+  const day = String(e.day || '-').trim();
+
+  if(activity === '-' && day === 'H') {
+    return '<span class="activityBadge">Holiday</span><span class="sourceNote">Reason not specified in source calendar</span>';
+  }
+  if(activity === '-') {
+    return '<span class="empty">Regular class day</span>';
+  }
+  if(activity.toLowerCase() === 'holiday') {
+    const label = weekdayName === 'Sunday' ? 'Sunday Holiday' : 'Holiday';
+    const note = weekdayName === 'Sunday' ? 'Weekly holiday' : 'Reason not specified in source calendar';
+    return `<span class="activityBadge">${escapeHtml(label)}</span><span class="sourceNote">${escapeHtml(note)}</span>`;
+  }
+  if(day === 'H') {
+    return `<span class="activityBadge">Holiday: ${escapeHtml(activity)}</span>`;
+  }
+  return `<span class="activityBadge">${escapeHtml(activity)}</span>`;
+}
+document.getElementById('prevBtn').onclick=()=>{ if(currentIndex>0){currentIndex--; render();} };
+document.getElementById('nextBtn').onclick=()=>{ if(currentIndex<months.length-1){currentIndex++; render();} };
+select.onchange=()=>{ currentIndex=Number(select.value); render(); };
+document.getElementById('todayBtn').onclick=()=>{ const idx=months.indexOf(new Date().toISOString().slice(0,7)); currentIndex=idx>=0?idx:0; render(); };
+document.getElementById('fullBtn').onclick=()=>{ const el=document.documentElement; if(!document.fullscreenElement) el.requestFullscreen?.(); else document.exitFullscreen?.(); };
+document.addEventListener('keydown', e=>{ if(e.key==='ArrowLeft') document.getElementById('prevBtn').click(); if(e.key==='ArrowRight') document.getElementById('nextBtn').click(); });
+render();
+</script>
+</body>
+</html>
